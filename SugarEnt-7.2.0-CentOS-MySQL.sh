@@ -21,7 +21,8 @@
 #
 #   1. SUGAR_ZIP_BASE
 #      Specify a SugarCRM .zip file to unzip into the Apache dir.
-#      This should be placed into the "zip" folder.
+#      NOTE: This should be placed into a folder named "zip" at the
+#      top level of the location where this script runs from.
 #      In SUGAR_ZIP_BASE, specify the root name of the .zip file;
 #      e.g. SUGAR_ZIP_BASE="foo" for a file named "foo.zip".
 #      If this variable is not set then no unzip will take place.
@@ -36,7 +37,8 @@
 #      Use format found in: www.php.net/manual/en/timezones.php
 # ===================================================================
 
-SUGAR_ZIP_BASE="SugarEnt-7.2.0"
+#SUGAR_ZIP_BASE="SugarEnt-7.2.0"
+SUGAR_ZIP_BASE=""
 SUGAR_HTML_TARGET="sugarcrm"
 PHP_TIMEZONE="America/Los_Angeles"
 
@@ -132,8 +134,8 @@ rpm -Uvh $ESPATH  >> $LOG 2>&1
 # Specific for CentOS as SELinux is turned on by default.
 # ===================================================================
 
-echo "Allowing Apache to call web service (SELInux setsebool)."
-echo "Allowing Apache to call web service (SELInux setsebool)." >> $LOG
+echo "Allowing Apache to call web service (SELinux setsebool)."
+echo "Allowing Apache to call web service (SELinux setsebool)." >> $LOG
 
 setsebool -P httpd_can_network_connect=1
 
@@ -211,16 +213,25 @@ fi
 # "SugarEnt-Full-7.2.0"
 # ===================================================================
 
-if [ -n $SUGAR_ZIP_BASE ]
+if [ ! -z $SUGAR_ZIP_BASE ]
 then
-  echo "Unzipping zip/$SUGAR_ZIP_BASE.zip..."
-  echo "Unzipping zip/$SUGAR_ZIP_BASE.zip..." >> $LOG
-  rm -rf /var/www/html/$SUGAR_HTML_TARGET
-  rm -rf /var/www/html/SugarEnt-Full-7.2.0
-  unzip zip/$SUGAR_ZIP_BASE.zip -d /var/www/html
-  mv /var/www/html/SugarEnt-Full-7.2.0 /var/www/html/$SUGAR_HTML_TARGET
-  chown apache:apache -R /var/www/html/$SUGAR_HTML_TARGET
-  chmod 755 -R /var/www/html/$SUGAR_HTML_TARGET
+  if [ -f "zip/$SUGAR_ZIP_BASE.zip" ]
+  then
+    echo "Unzipping zip/$SUGAR_ZIP_BASE.zip..."
+    echo "Unzipping zip/$SUGAR_ZIP_BASE.zip..." >> $LOG
+    rm -rf /var/www/html/$SUGAR_HTML_TARGET
+    rm -rf /var/www/html/SugarEnt-Full-7.2.0
+    unzip zip/$SUGAR_ZIP_BASE.zip -d /var/www/html >> $LOG 2>&1 
+    mv /var/www/html/SugarEnt-Full-7.2.0 /var/www/html/$SUGAR_HTML_TARGET
+    chown apache:apache -R /var/www/html/$SUGAR_HTML_TARGET
+    chmod 755 -R /var/www/html/$SUGAR_HTML_TARGET
+  else
+    echo "File not found: zip/$SUGAR_ZIP_BASE.zip..."
+    echo "File not found: zip/$SUGAR_ZIP_BASE.zip..." >> $LOG
+  fi
+else
+  echo "Sugar zip file base name not set: \$SUGAR_ZIP_BASE"
+  echo "Sugar zip file base name not set: \$SUGAR_ZIP_BASE" >> $LOG
 fi
 
 # ===================================================================
