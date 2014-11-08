@@ -2,14 +2,17 @@
 
 # =======================================================================
 # 
-# SugarEnt-7.2.0-centos-mysql.sh
+# SugarEnt-7.x-centos-mysql.sh
 #
-# Script to automate installing a LAMP stack for Sugar Enterprise 7.2.0
+# Script to automate installing a LAMP stack for Sugar Enterprise 7.x
 # on CentOS 6.5.
 #
 # This script assumes that you have installed a generic CentOS system
 # from a CentOS 6.5 distribution.  This script has been tested with
 # the Live CD distribution of CentOS 6.5.
+#
+# This has been tested with Sugar Enterprise 7.2.0 and 7.5.0.0 versions
+# of the full software (not the upgrade version).
 #
 # Written by: Remy Malan
 # Date: May 2014
@@ -27,18 +30,24 @@
 #      e.g. SUGAR_ZIP_BASE="foo" for a file named "foo.zip".
 #      If this variable is not set then no unzip will take place.
 #
-#   2. SUGAR_HTML_TARGET
+#   2, SUGAR_FULL_BASE
+#      Specifies the top level directory name to look for in the unzipped
+#      contents of SUGAR_ZIP_BASE.
+#
+#   3. SUGAR_HTML_TARGET
 #      Specify the name for the installation in the /var/www/html
 #      directory.  This option is only useful if option 1. above is
 #      being used; i.e. SUGAR_ZIP_BASE is not empty.
 #
-#   3. PHP_TIMEZONE
+#   4. PHP_TIMEZONE
 #      Timezone for php.ini file if you are using PHP 5.3 or greater.
 #      Use format found in: www.php.net/manual/en/timezones.php
 # ===================================================================
 
-#SUGAR_ZIP_BASE="SugarEnt-7.2.0"
-SUGAR_ZIP_BASE=""
+SUGAR_ZIP_BASE="SugarEnt-7.5.0.0"
+SUGAR_FULL_BASE="SugarEnt-Full-7.5.0.0"
+#SUGAR_ZIP_BASE=""
+#SUGSAR_FULL_BASE=""
 SUGAR_HTML_TARGET="sugarcrm"
 PHP_TIMEZONE="America/Los_Angeles"
 
@@ -51,6 +60,7 @@ mkdir -p $LOGDIR
 
 TIMESTAMP="$(date +%F_%H-%M-%S)"
 LOG="$LOGDIR/install.$TIMESTAMP.log"
+ZIPLOG="$LOGDIR/install.$TIMESTAMP.zip.out.log"
 
 # ===================================================================
 # Print header.
@@ -220,9 +230,11 @@ then
     echo "Unzipping zip/$SUGAR_ZIP_BASE.zip..."
     echo "Unzipping zip/$SUGAR_ZIP_BASE.zip..." >> $LOG
     rm -rf /var/www/html/$SUGAR_HTML_TARGET
-    rm -rf /var/www/html/SugarEnt-Full-7.2.0
-    unzip zip/$SUGAR_ZIP_BASE.zip -d /var/www/html >> $LOG 2>&1 
-    mv /var/www/html/SugarEnt-Full-7.2.0 /var/www/html/$SUGAR_HTML_TARGET
+    rm -rf /var/www/html/$SUGAR_FULL_BASE
+    unzip zip/$SUGAR_ZIP_BASE.zip -d /var/www/html >> $ZIPLOG 2>&1
+    echo "Creating /var/www/html/$SUGAR_HTML_TARGET directory..."
+    echo "Creating /var/www/html/$SUGAR_HTML_TARGET directory..." >> $LOG
+    mv /var/www/html/$SUGAR_FULL_BASE /var/www/html/$SUGAR_HTML_TARGET
     chown apache:apache -R /var/www/html/$SUGAR_HTML_TARGET
     chmod 755 -R /var/www/html/$SUGAR_HTML_TARGET
   else
